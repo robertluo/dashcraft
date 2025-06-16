@@ -1,4 +1,4 @@
-# Ramachart
+# Dashcraft
 
 A ClojureScript component library using [replicant](https://replicant.fun) with a development environment powered by Figwheel-main and Portfolio for component development and visualization.
 
@@ -13,7 +13,7 @@ A ClojureScript component library using [replicant](https://replicant.fun) with 
 2. Install JavaScript dependencies:
    ```bash
    # Using bun (recommended)
-   bun install
+   bun update
 
    # OR using npm
    npm install
