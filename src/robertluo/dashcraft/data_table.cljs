@@ -4,6 +4,14 @@
    [replicant.hiccup :as hiccup]))
 
 (defn grouping-data
+  "
+returns `data` specified by `grouping` spec:
+   
+  - `:column` on which column group by
+  - `:aggregations` a vector specific summary data for columns, it is a pair of
+   - column
+   - function for summarize two data, default to `(fnil + 0)`
+   "
   [data grouping]
   (let [{g-clm :column aggregations :aggregations} grouping]
     (-> data
@@ -35,38 +43,75 @@
            {:name "John" :sex :male :balance -456 :age 45}]}
    {:column :sex :aggregations [[:balance] [:age]]}))
 
-(defn switch-sorting
+(defn ^:no-doc switch-sorting
   [sorting column]
   (-> sorting
       (assoc :column column)
       (update :order (fn [o] (case o :asc :desc :desc nil :asc)))))
 
-(defalias th
-  [{::keys [column data on-sort lable-of] :or {lable-of (fn [v] [:span (str v)])} :as attrs}]
-  (let [{sort-clm :column order :order sortable :sortable :as sorting} (get data :sorting)
-        sortable? ((set sortable) column)]
-    [:div
-     (lable-of column)
-     [:span (cond-> (merge attrs {:class (cond-> [] sortable? (conj "clickable"))})
-              sortable? (merge {:on {:click (fn [_] (on-sort (switch-sorting sorting column)))}}))
-      (cond
-        (= sort-clm column) (case order :asc " 🔺" :desc " 🔻" " ↕️")
-        sortable? " ↕️"
-        :else "")]]))
+(defalias 
+  ^{:doc "
+A table header component.
+Special attributes:
+          
+ - `::column`
+ - `::lable-of` an optional function accept the column returns a string.
 
-(defalias td
-  "display cell of data table.
-   special attributes:
-    - `::column` the column of the cell
-    - `::cell` the value of this cell
-    - `::lable-of` an optional function accept column and cell returns a string as the content
-    - `::class-of` an optional function accept column and cell returns the additional class vector"
-  [{::keys [column cell lable-of class-of] :or {class-of (constantly []) lable-of (fn [_ v] v)} :as attrs} children]
+Can have children which inherites `::column`
+         "}
+  th
+  [{::keys [column lable-of] :or {lable-of (fn [v] [:span (str v)])} :as attrs}
+   children]
+  [:div attrs
+   (lable-of column)
+   (map #(hiccup/update-attrs % assoc ::column column) children)])
+
+(defalias 
+  ^{:doc 
+    "
+A sort button for `th`, generating sorting preference from the user.
+Special attributes:
+     
+ - `column`
+ - `on-sort` an event when user clicks the sort button
+ - `sorting` a map contains the following keys:
+   - `column` which column to sort
+   - `order` the order of the sort, `:asc`, `:desc` and nil
+   - `sortable` a predict accept a column and returns true if the column support sorting
+"}
+  sort-button 
+  [{::keys [column on-sort sorting] :as attrs}]
+  (let [{sort-clm :column order :order sortable :sortable :or {sortable (constantly true)}} sorting
+        sortable? (sortable column)]
+    [:span (cond-> (merge attrs {:class (cond-> [] sortable? (conj "clickable"))})
+             sortable? (merge {:on {:click (fn [_] (on-sort (switch-sorting sorting column)))}}))
+     (cond
+       (= sort-clm column) (case order :asc " 🔺" :desc " 🔻" " ↕️")
+       sortable? " ↕️"
+       :else "")]))
+
+(defalias 
+  ^{:doc "
+Display cell of data table.
+        
+special attributes:
+ - `::column` the column of the cell
+ - `::cell` the value of this cell
+ - `::lable-of` an optional function accept column and cell returns a string as the content
+ - `::class-of` an optional function accept column and cell returns the additional class vector.
+
+Can have children who inherit `::column` and `::cell`.
+      "}
+  td
+  [{::keys [column cell lable-of class-of] 
+    :or {class-of (constantly []) 
+         lable-of (fn [_ v] (str v))} :as attrs}
+   children]
   (let [classes (class-of column cell)]
-    [:div (update attrs :class #(concat % classes))
+    [:div (update attrs :class concat classes)
      [:span
       (lable-of column cell)]
-     children]))
+     (map #(hiccup/update-attrs % assoc ::column column ::cell cell) children)]))
 
 (defn sort-rows
   "sort `rows` by `sorting` returns sorted rows"
@@ -74,13 +119,21 @@
   (let [{sort-clm :column order :order} sorting]
     (cond->> rows (and sort-clm order) (sort-by sort-clm (if (= order :asc) < >)))))
 
-(defalias table
-  "Data table component.
-   Special attributes:
-     - `::data` data to be displayed.
-       - `:columns` the columns of the data
-       - `:rows` the rows of the data, each row is a map corresponding to columns, only fields specified in `:columns`
-         will be displayed."
+(defalias 
+  ^{:doc "
+Data table component.
+
+  - `::data` data to be displayed.
+    - `:columns` the columns of the data
+    - `:rows` the rows of the data, each row is a map corresponding to columns, only fields specified in `:columns`
+           will be displayed.
+     
+Chidlren:
+       
+  - a table-header default to `th`
+  - a table-cell default to `td`
+"}
+  table 
   [{::keys [data] :as attrs}
    [table-header table-cell]]
   (let [{:keys [columns rows]} data]
@@ -89,7 +142,7 @@
       [:thead
        [:tr
         (for [clm columns]
-          [:th (hiccup/update-attrs table-header assoc ::column clm ::data data)])]]
+          [:th (hiccup/update-attrs (or table-header [th]) assoc ::column clm)])]]
       [:tbody
        (map-indexed
         (fn [idx row]
@@ -97,5 +150,5 @@
            (for [clm columns
                  :let [cell (get row clm)]]
              [:td
-              (hiccup/update-attrs table-cell assoc ::column clm ::cell cell)])])
+              (hiccup/update-attrs (or table-cell [td]) assoc ::column clm ::cell cell)])])
         rows)]]]))
