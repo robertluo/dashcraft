@@ -1,0 +1,5 @@
+^{:watch-dirs ["src" "portfolio"]
+  :css-dirs ["resources/public/css"]
+  :auto-testing true
+  :auto-bundle :webpack}
+{:main dashcraft.scenes}

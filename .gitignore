@@ -1,0 +1,11 @@
+bun.lock
+.calva/
+.clj-kondo/*/
+.lsp/
+.rebel*
+.shadow-cljs/
+node_modules/
+target/
+.cpcache/
+.nrepl-*
+.vscode/
