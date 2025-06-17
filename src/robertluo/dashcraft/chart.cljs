@@ -42,5 +42,4 @@
 
 (defalias chart
   [{::keys [data] :as attrs}]
-  (prn data)
   (render-chart attrs (data->chart data)))

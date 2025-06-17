@@ -60,10 +60,10 @@ Special attributes:
 Can have children which inherites `::column`
          "}
   th
-  [{::keys [column lable-of] :or {lable-of (fn [v] [:span (str v)])} :as attrs}
+  [{::keys [column lable-of] :or {lable-of (fn [v] (str v))} :as attrs}
    children]
   [:div attrs
-   (lable-of column)
+   [:span (or (lable-of column) " ")]
    (map #(hiccup/update-attrs % assoc ::column column) children)])
 
 (defalias 
@@ -88,7 +88,7 @@ Special attributes:
      (cond
        (= sort-clm column) (case order :asc " 🔺" :desc " 🔻" " ↕️")
        sortable? " ↕️"
-       :else "")]))
+       :else " ")]))
 
 (defalias 
   ^{:doc "
@@ -105,12 +105,13 @@ Can have children who inherit `::column` and `::cell`.
   td
   [{::keys [column cell lable-of class-of] 
     :or {class-of (constantly []) 
-         lable-of (fn [_ v] (str v))} :as attrs}
+         lable-of (fn [_ v] (str v))}
+    :as attrs}
    children]
   (let [classes (class-of column cell)]
     [:div (update attrs :class concat classes)
      [:span
-      (lable-of column cell)]
+      (or (lable-of column cell) " ")]
      (map #(hiccup/update-attrs % assoc ::column column ::cell cell) children)]))
 
 (defn sort-rows

@@ -1,12 +1,13 @@
 (ns dashcraft.scenes
-  (:require 
-   [portfolio.replicant :refer [defscene]] 
+  (:require
+   [portfolio.replicant :refer [defscene]]
    [portfolio.ui :as portfolio]
    [robertluo.dashcraft.chart :as ui]
-   [robertluo.dashcraft.data-table :as dt]))
+   [robertluo.dashcraft.data-table :as dt]
+   [robertluo.dashcraft.edn-editor :as ee]))
 
 (defscene simple-chart
-  [ui/chart 
+  [ui/chart
    {:class :echart
     ::ui/data
     {:columns [:product :price :sales]
@@ -17,7 +18,7 @@
      :chart/series [{:type :bar :y-axis :sales}
                     {:type :line :y-axis :price}]}}])
 
-(def table-data 
+(def table-data
   {:columns [:name :balance :sex :age]
    :rows
    [{:name "Robert" :sex :male :age 23 :balance 1323442}
@@ -39,6 +40,45 @@
     [dt/sort-button {::dt/sorting (:sorting @state)
                      ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st))))}]]
    [dt/td {::dt/class-of (fn [column _] (cond-> [] (= column :balance) (conj "number-cell")))}]])
+
+(defscene simple-edn-editor
+  :params (atom {:name "Old Gaffer"
+                 :address {:street "Bagshot Row"
+                           :number 1
+                           :additional-key "hello"}
+                 :items [{:item :spade
+                          :price 3.2
+                          :in-stock true}
+                         {:item :pipe
+                          :price 2.7
+                          :in-stock false}]
+                 :instructions ["please" "send" "help"]
+                 :foo [1 "hello" false]})
+  [state]
+  [:div
+   [ee/editor
+    {::ee/schema
+     [:map
+      [:name :string]
+      [:address
+       [:orn
+        [:structured [:map
+                      [:street [:string {:min 1}]]
+                      [:number {:optional true} :int]]]
+        [:raw :string]]]
+      [:items
+       [:vector
+        [:map
+         [:item [:enum :fork :spade :pipe]]
+         [:price {:optional true} :double]
+         [:in-stock {:optional true} :boolean]]]] 
+      [:instructions [:or
+                      :string
+                      [:vector :string]]]
+      [:metadata [:map-of :keyword :string]]
+      [:foo [:tuple :int :string :boolean]]]
+     ::ee/value @state
+     ::ee/on-change (fn [v] (prn v))}]])
 
 (defn main []
   (portfolio/start!
