@@ -4,7 +4,6 @@
   Copy from https://github.com/opqdonut/malli-edn-editor/blob/main/src/editor.cljs
   Many thanks to @opqdonut"
   (:require
-   [cljs.pprint]
    [malli.core :as m]
    [malli.transform :as mt]
    [malli.util :as mu]
@@ -257,7 +256,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; main entry points
 
-(defalias editor 
+(defalias
+  ^{:doc "
+An EDN editor backed by malli `schema` with `value`, when its value changed,
+triggers `on-change` event with the value.
+   "}
+  editor
   [{::keys [schema value on-change] :as attrs}]
   [:div (merge {:class "malli-editor"} attrs)
    (edit schema value on-change)])
