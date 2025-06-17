@@ -2,21 +2,24 @@
   (:require
    [portfolio.replicant :refer [defscene]]
    [portfolio.ui :as portfolio]
-   [robertluo.dashcraft.chart :as ui]
+   [robertluo.dashcraft.chart :as ch]
    [robertluo.dashcraft.data-table :as dt]
    [robertluo.dashcraft.edn-editor :as ee]))
 
 (defscene simple-chart
-  [ui/chart
+  [ch/chart
    {:class :echart
-    ::ui/data
-    {:columns [:product :price :sales]
-     :rows [["Shirts", 15.3, 5]
-            ["Cardigans", 9.1, 20]
-            ["Socks", 4.8, 25]]
-     :chart/x-axis :product
-     :chart/series [{:type :bar :y-axis :sales}
-                    {:type :line :y-axis :price}]}}])
+    ::ch/data
+    {:columns [:product "2015" "2016"],
+     :rows [{:product "Shirts",    "2015" 15.3, "2016" 5}
+            {:product "Cardigans", "2015" 9.1,  "2016" 20}
+            {:product "Socks",     "2015" 4.8,  "2016" 25}]
+     :xAxis {:type :category}
+     :yAxis {}
+     :series [{:type :bar} {:type :bar}]
+     :legend {}
+     :tooltip {}}
+    ::ch/on-event [[:click {:seriesName "2015"} (fn [event] (prn event))]]}])
 
 (def table-data
   {:columns [:name :balance :sex :age]
@@ -36,7 +39,7 @@
   [state]
   [dt/table
    {:class :data-table ::dt/data @state}
-   [dt/th {::dt/lable-of (fn [v] (case v ::ui/group "" (name v)))}
+   [dt/th {::dt/lable-of (fn [v] (case v ::ch/group "" (name v)))}
     [dt/sort-button {::dt/sorting (:sorting @state)
                      ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st))))}]]
    [dt/td {::dt/class-of (fn [column _] (cond-> [] (= column :balance) (conj "number-cell")))}]])
