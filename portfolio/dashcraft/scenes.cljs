@@ -81,7 +81,7 @@
       [:metadata [:map-of :keyword :string]]
       [:foo [:tuple :int :string :boolean]]]
      ::ee/value @state
-     ::ee/on-change (fn [v] (prn v))}]])
+     ::ee/on-change (fn [v] (reset! state v))}]])
 
 (defn main []
   (portfolio/start!
