@@ -18,11 +18,11 @@
 
 (defmethod default-value :default [_] nil)
 (defmethod default-value :string  [_] "")
-(defmethod default-value :keyword [_] :k)
+(defmethod default-value :keyword [_] (->> (rand-int 1000) (str "keyword") keyword))
 (defmethod default-value :vector  [_] [])
-(defmethod default-value :boolean [_] false)
-(defmethod default-value :int     [_] 0)
-(defmethod default-value :double   [_] 0)
+(defmethod default-value :boolean [_] (even? (rand-int 2)))
+(defmethod default-value :int     [_] (rand-int 1000))
+(defmethod default-value :double   [_] (rand))
 
 (defmethod default-value :map [schema]
   (into {}
@@ -96,10 +96,9 @@
 
 (defmethod edit :enum [schema value on-change]
   [:div.malli-editor-enum
-   (into [:select]
+   (into [:select {:on {:change #(on-change (-> % .-target .-value))}}]
          (for [v (m/children schema)]
-           [:option {:selected (= value v)
-                     :on {:click #(on-change v)}}
+           [:option {:selected (= value v)}
             (pr-str v)]))])
 
 (defn bracket [open close contents]
