@@ -55,7 +55,7 @@ See https://echarts.apache.org/en/option.html for details.
                  (doseq [[event-name query func] on-event]
                    (.on chart (name event-name)
                         (clj->js query)
-                        (fn [params] (func (js->clj params)))))
+                        (fn [params] (func (js->clj params :keywordize-keys true)))))
                  (remember chart)))
              :replicant/on-update
              (fn [{:replicant/keys [memory]}]
