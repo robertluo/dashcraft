@@ -43,19 +43,21 @@ the rest of data will send to echarts as options.
 See https://echarts.apache.org/en/option.html for details.
    "}
   chart
-  [{::keys [data on-event] :as attrs}]
+  [{::keys [data notify] :as attrs}]
   (let [cht-js (-> data data->chart clj->js)]
-    [:div
+    [:div.echart
      (merge attrs
             {:replicant/on-mount
              (fn [{:replicant/keys [node remember]}]
                (prn "Mounting chart: " (.-offsetWidth node) (.-offsetHeight node))
                (let [chart (echarts/init node)]
                  (.setOption chart cht-js)
-                 (doseq [[event-name query func] on-event]
-                   (.on chart (name event-name)
+                 (doseq [[chart-evt query] notify]
+                   (.on chart (name chart-evt)
                         (clj->js query)
-                        (fn [params] (func (js->clj params :keywordize-keys true)))))
+                        (fn [params]
+                          (let [evt (js/CustomEvent. "notify" (clj->js {:detail {:data params}}))]
+                            (.dispatchEvent node evt)))))
                  (remember chart)))
              :replicant/on-update
              (fn [{:replicant/keys [memory]}]

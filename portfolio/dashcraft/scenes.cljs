@@ -7,19 +7,21 @@
    [robertluo.dashcraft.edn-editor :as ee]))
 
 (defscene simple-chart
+  :params (atom {:columns [:product "2015" "2016"],
+                 :rows [{:product "Shirts",    "2015" 15.3, "2016" 5}
+                        {:product "Cardigans", "2015" 9.1,  "2016" 20}
+                        {:product "Socks",     "2015" 4.8,  "2016" 25}]
+                 :xAxis {:type :category}
+                 :yAxis {}
+                 :series [{:type :bar} {:type :bar}]
+                 :legend {}
+                 :tooltip {}})
+  [state]
   [ch/chart
-   {:class :echart
-    ::ch/data
-    {:columns [:product "2015" "2016"],
-     :rows [{:product "Shirts",    "2015" 15.3, "2016" 5}
-            {:product "Cardigans", "2015" 9.1,  "2016" 20}
-            {:product "Socks",     "2015" 4.8,  "2016" 25}]
-     :xAxis {:type :category}
-     :yAxis {}
-     :series [{:type :bar} {:type :bar}]
-     :legend {}
-     :tooltip {}}
-    ::ch/on-event [[:click {:seriesName "2015"} (fn [event] (prn event))]]}])
+   {::ch/data @state 
+    ::ch/notify [[:click {:seriesName "2015"}]]
+    :on {:notify (fn [evt] 
+                   (prn (-> evt .-detail)))}}])
 
 (def table-data
   {:columns [:name :balance :sex :age]
