@@ -3,6 +3,10 @@ name: Deploy ClojureScript SPA to GitHub Pages
 on:
   push:
     branches: [main]
+    
+permissions:
+  id-token: write
+  pages: write
 
 jobs:
   build-and-deploy:
