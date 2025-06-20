@@ -34,7 +34,7 @@ jobs:
         run: bun update
 
       - name: Build ClojureScript
-        run: clojure -M -m figwheel.main -b dev
+        run: clojure -M -m figwheel.main -bo dev
 
       - name: Prepare Deployment Files
         run: |
