@@ -20,8 +20,27 @@
   [ch/chart
    {::ch/data @state 
     ::ch/notify [[:click {:seriesName "2015"}]]
-    :on {:notify (fn [evt] 
-                   (prn (-> evt .-detail)))}}])
+    :on {:notify (fn [_] (swap! state assoc-in [:series 1 :type] :line))}}])
+
+(defscene drill-down-chart
+  :params (atom {:columns [:product "2015" "2016"],
+                 :rows [{:product "Shirts",    "2015" 15.3, "2016" 5}
+                        {:product "Cardigans", "2015" 9.1,  "2016" 20,
+                         :children [{:product "English" "2015" 1.5, "2016" 5
+                                     :children [{:product "London" "2015" 0.1}
+                                                {:product "Liverpool" "2015" 1.4}]}
+                                    {:product "Scotish" "2015" 4.8, "2016" 12}]}
+                        {:product "Socks",     "2015" 4.8,  "2016" 25}]
+                 :drill-down :children
+                 :xAxis {:type :category}
+                 :yAxis {}
+                 :series [{:type :bar} {:type :bar}]
+                 :legend {}
+                 :tooltip {}})
+  [state]
+  [ch/drill-down #::ch {:data @state, :on-drill 
+                        (fn [idx] 
+                          (prn (swap! state assoc :path idx)))}])
 
 (def table-data
   {:columns [:name :balance :sex :age]

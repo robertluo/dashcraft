@@ -1,7 +1,8 @@
 (ns robertluo.dashcraft.chart
   (:require
    [replicant.alias :refer [defalias]] 
-   [echarts]))
+   [echarts]
+   [replicant.hiccup :as hiccup]))
 
 (defn data->chart
   "turns clojure data into echart data"
@@ -49,7 +50,6 @@ See https://echarts.apache.org/en/option.html for details.
      (merge attrs
             {:replicant/on-mount
              (fn [{:replicant/keys [node remember]}]
-               (prn "Mounting chart: " (.-offsetWidth node) (.-offsetHeight node))
                (let [chart (echarts/init node)]
                  (.setOption chart cht-js)
                  (doseq [[chart-evt query] notify]
@@ -65,3 +65,31 @@ See https://echarts.apache.org/en/option.html for details.
              :replicant/on-unmount
              (fn [{:replicant/keys [memory]}]
                (.dispose memory))})]))
+
+(defn inc-take [col]
+  (->> (iterate inc 0) (take-while #(<= % (count col))) (map #(vec (take % col))) ))
+
+(comment
+  (inc-take [0 1 0]) ;=> [] [0 1] [0 1 1] 
+  )
+
+(defalias bread-scumb
+  [{::keys [items on-click label-of] :or {label-of #(if % (str %) "Root")}}]
+  [:ul.breadcrumb
+   (for [item items]
+     [:li [:a {:href "#" :on {:click (fn [_] (on-click item))}} (label-of item)]])])
+
+(defalias drill-down
+  [{::keys [data on-drill] :as attrs}]
+  (let [{:keys [path drill-down] :or {path []}} data
+        get-rows (fn [rows] (reduce (fn [rs elem] (-> rs (get elem) drill-down)) rows path))]
+    [:div attrs
+     [bread-scumb {::items (inc-take path) 
+                   ::on-click (fn [idx] (on-drill idx))}]
+     [chart {::data (update data :rows get-rows)
+             ::notify [[:click {}]]
+             :on {:notify (fn [evt] 
+                            (let [d (-> evt .-detail (js->clj :keywordize-keys true) :data)
+                                  idx (:dataIndex d)
+                                  children (-> data :rows get-rows (get idx) drill-down)]
+                              (when (seq children) (on-drill (conj path idx)))))}}]]))
