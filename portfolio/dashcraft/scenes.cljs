@@ -110,3 +110,5 @@
     {:css-paths ["/css/styles.css"]
      :viewport/defaults
      {:background/background-color "#fdeddd"}}}))
+
+(main)

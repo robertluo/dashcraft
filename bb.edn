@@ -1,0 +1,9 @@
+{:tasks
+ {clean    {:doc      "Clean project"
+            :requires ([babashka.fs :as fs])
+            :task     (doseq [dir ["target" "node_modules"]] (fs/delete-tree dir))}
+  -prepare {:doc  "Prepare"
+            :task (shell "bun update")}
+  dev      {:doc     "Invoke a dev repl"
+            :depends [-prepare]
+            :task    (clojure "-M:dev")}}}
