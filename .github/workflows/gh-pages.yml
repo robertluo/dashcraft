@@ -3,8 +3,9 @@ name: Deploy ClojureScript SPA to GitHub Pages
 on:
   push:
     branches: [main]
-    
+
 permissions:
+  contents: write
   id-token: write
   pages: write
 
@@ -14,6 +15,28 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      # Cache Clojure dependencies
+      - name: Cache Clojure Deps
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.m2/repository
+            ~/.gitlibs
+          key: ${{ runner.os }}-clj-${{ hashFiles('deps.edn') }}
+          restore-keys: |
+            ${{ runner.os }}-clj-
+
+      # Cache JS dependencies (Bun)
+      - name: Cache Bun dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            bun.lockb
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
 
       - name: Set up Java
         uses: actions/setup-java@v4
