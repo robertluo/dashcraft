@@ -62,7 +62,7 @@
     ::dt/drill-down :children}
    [dt/th {::dt/label-of (fn [v] (case v ::ch/group "" (name v)))}
     [dt/sort-button {::dt/sorting (:sorting @state)
-                     ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st))))}]]
+                     ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st :children))))}]]
    [dt/td {::dt/class-of (fn [column _] (cond-> [] (= column :balance) (conj "number-cell")))}]])
 
 (defscene simple-edn-editor

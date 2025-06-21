@@ -114,9 +114,14 @@ Can have children who inherit `::column` and `::cell`.
 
 (defn sort-rows
   "sort `rows` by `sorting` returns sorted rows"
-  [rows sorting]
-  (let [{sort-clm :column order :order} sorting]
-    (cond->> rows (and sort-clm order) (sort-by sort-clm (if (= order :asc) < >)))))
+  ([rows sorting]
+   (sort-rows rows sorting nil))
+  ([rows sorting drill-down]
+   (let [{sort-clm :column order :order} sorting
+         f #(sort-by sort-clm (if (= order :asc) < >) %)]
+     (cond->> rows 
+       (and sort-clm order) f
+       drill-down (map (fn [r] (update r drill-down sort-rows sorting drill-down)))))))
 
 (defalias 
   ^{:doc "
@@ -126,6 +131,7 @@ Data table component.
     - `:columns` the columns of the data
     - `:rows` the rows of the data, each row is a map corresponding to columns, only fields specified in `:columns`
            will be displayed.
+  - `::drill-down` column name of grouping
      
 Chidlren:
        
