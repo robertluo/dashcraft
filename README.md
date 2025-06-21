@@ -20,6 +20,10 @@ bb dev
 
 This will start a REPL with hot-reloading enabled and nREPL support for editor integration.
 
+### Test
+
+`bb test`
+
 ### Component Development with Portfolio
 
 Component examples and demos are managed through Portfolio. Add your component examples in the `portfolio/` directory to see them in the development environment.

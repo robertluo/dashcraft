@@ -32,7 +32,7 @@
                                     {:product "Scotish" "2015" 4.8, "2016" 12}]}
                         {:product "Socks",     "2015" 4.8,  "2016" 25}]
                  :drill-down :children
-                 :xAxis {:type :category}
+                 :xAxis {:type :category :show false}
                  :yAxis {}
                  :series [{:type :pie} {:type :pie}]
                  :legend {}
