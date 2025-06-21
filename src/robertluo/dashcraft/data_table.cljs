@@ -138,7 +138,7 @@ Chidlren:
   [{::keys [data] :as attrs}
    [table-header table-cell]]
   (let [{:keys [columns rows]} data]
-    [:div attrs
+    [:div (merge {:class ["data-table"]} attrs)
      [:table
       [:thead
        [:tr

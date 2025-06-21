@@ -52,8 +52,7 @@
    })
 
 (defscene simple-data-table
-  [dt/table
-   {:class :data-table ::dt/data table-data}])
+  [dt/table {::dt/data table-data}])
 
 (defscene grouping-data-table
   :params (atom (dt/grouping-data table-data {:column :sex :aggregations [[:balance (fnil + 0)] [:age]]}))
@@ -107,7 +106,7 @@
 (defn main []
   (portfolio/start!
    {:config
-    {:css-paths ["/css/styles.css"]
+    {:css-paths ["/css/chart.css" "/css/data_table.css" "/css/edn_editor.css"]
      :viewport/defaults
      {:background/background-color "#fdeddd"}}}))
 
