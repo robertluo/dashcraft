@@ -20,20 +20,18 @@ returns `data` specified by `grouping` spec:
                 (fn [rows]
                   (->> rows
                        (group-by g-clm)
-                       (mapcat
+                       (map
                         (fn [[v irows]]
-                          (cons
-                           (merge {::group v}
-                                  (reduce
-                                   (fn [acc row]
-                                     (->> aggregations
-                                          (reduce
-                                           (fn [v [clm f]]
-                                             (merge-with (or f (fnil + 0)) v (select-keys row [clm])))
-                                           acc)))
-                                   {}
-                                   irows))
-                           irows)))))))))
+                          (merge {::group v :children irows}
+                                 (reduce
+                                  (fn [acc row]
+                                    (->> aggregations
+                                         (reduce
+                                          (fn [v [clm f]]
+                                            (merge-with (or f (fnil + 0)) v (select-keys row [clm])))
+                                          acc)))
+                                  {}
+                                  irows))))))))))
 
 (comment
   (grouping-data
@@ -55,15 +53,15 @@ A table header component.
 Special attributes:
           
  - `::column`
- - `::lable-of` an optional function accept the column returns a string.
+ - `::label-of` an optional function accept the column returns a string.
 
 Can have children which inherites `::column`
          "}
   th
-  [{::keys [column lable-of] :or {lable-of (fn [v] (str v))} :as attrs}
+  [{::keys [column label-of] :or {label-of (fn [v] (str v))} :as attrs}
    children]
   [:div attrs
-   [:span (or (lable-of column) " ")]
+   [:span (or (label-of column) " ")]
    (map #(hiccup/update-attrs % assoc ::column column) children)])
 
 (defalias 
@@ -97,28 +95,33 @@ Display cell of data table.
 special attributes:
  - `::column` the column of the cell
  - `::cell` the value of this cell
- - `::lable-of` an optional function accept column and cell returns a string as the content
+ - `::label-of` an optional function accept column and cell returns a string as the content
  - `::class-of` an optional function accept column and cell returns the additional class vector.
 
 Can have children who inherit `::column` and `::cell`.
       "}
   td
-  [{::keys [column cell lable-of class-of] 
+  [{::keys [column cell label-of class-of] 
     :or {class-of (constantly []) 
-         lable-of (fn [_ v] (str v))}
+         label-of (fn [_ v] (str v))}
     :as attrs}
    children]
   (let [classes (class-of column cell)]
     [:div (update attrs :class concat classes)
      [:span
-      (or (lable-of column cell) " ")]
+      (or (label-of column cell) " ")]
      (map #(hiccup/update-attrs % assoc ::column column ::cell cell) children)]))
 
 (defn sort-rows
   "sort `rows` by `sorting` returns sorted rows"
-  [rows sorting]
-  (let [{sort-clm :column order :order} sorting]
-    (cond->> rows (and sort-clm order) (sort-by sort-clm (if (= order :asc) < >)))))
+  ([rows sorting]
+   (sort-rows rows sorting nil))
+  ([rows sorting drill-down]
+   (let [{sort-clm :column order :order} sorting
+         f #(sort-by sort-clm (if (= order :asc) < >) %)]
+     (cond->> rows 
+       (and sort-clm order) f
+       drill-down (map (fn [r] (update r drill-down sort-rows sorting drill-down)))))))
 
 (defalias 
   ^{:doc "
@@ -128,6 +131,7 @@ Data table component.
     - `:columns` the columns of the data
     - `:rows` the rows of the data, each row is a map corresponding to columns, only fields specified in `:columns`
            will be displayed.
+  - `::drill-down` column name of grouping
      
 Chidlren:
        
@@ -135,21 +139,21 @@ Chidlren:
   - a table-cell default to `td`
 "}
   table 
-  [{::keys [data] :as attrs}
+  [{::keys [data drill-down] :as attrs}
    [table-header table-cell]]
   (let [{:keys [columns rows]} data]
-    [:div attrs
+    [:div (merge {:class ["data-table"]} attrs)
      [:table
       [:thead
        [:tr
         (for [clm columns]
           [:th (hiccup/update-attrs (or table-header [th]) assoc ::column clm)])]]
       [:tbody
-       (map-indexed
-        (fn [idx row]
-          [:tr {:replicant/key idx}
-           (for [clm columns
-                 :let [cell (get row clm)]]
-             [:td
-              (hiccup/update-attrs (or table-cell [td]) assoc ::column clm ::cell cell)])])
-        rows)]]]))
+       (->> (cond->> rows drill-down (mapcat (fn [r] (if-let [children (cons r (drill-down r))] children [r]))))
+            (map-indexed
+             (fn [idx row]
+               [:tr {:replicant/key idx}
+                (for [clm columns
+                      :let [cell (get row clm)]]
+                  [:td
+                   (hiccup/update-attrs (or table-cell [td]) assoc ::column clm ::cell cell)])])))]]]))

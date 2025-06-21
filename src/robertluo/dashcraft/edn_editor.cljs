@@ -138,7 +138,6 @@
               [:div
                (for [k present-keys]
                  (let [[_ properties value-schema] (mu/find schema k)]
-                   ^{:key (str k)}
                    [:div.malli-editor-key-value {:style {:display :flex}}
                     [:div.malli-editor-key (pr-str k)]
                     (when (:optional properties)

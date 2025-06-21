@@ -52,17 +52,17 @@
    })
 
 (defscene simple-data-table
-  [dt/table
-   {:class :data-table ::dt/data table-data}])
+  [dt/table {::dt/data table-data}])
 
 (defscene grouping-data-table
   :params (atom (dt/grouping-data table-data {:column :sex :aggregations [[:balance (fnil + 0)] [:age]]}))
   [state]
   [dt/table
-   {:class :data-table ::dt/data @state}
-   [dt/th {::dt/lable-of (fn [v] (case v ::ch/group "" (name v)))}
+   {::dt/data @state
+    ::dt/drill-down :children}
+   [dt/th {::dt/label-of (fn [v] (case v ::ch/group "" (name v)))}
     [dt/sort-button {::dt/sorting (:sorting @state)
-                     ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st))))}]]
+                     ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st :children))))}]]
    [dt/td {::dt/class-of (fn [column _] (cond-> [] (= column :balance) (conj "number-cell")))}]])
 
 (defscene simple-edn-editor
@@ -79,35 +79,34 @@
                  :instructions ["please" "send" "help"]
                  :foo [1 "hello" false]})
   [state]
-  [:div
-   [ee/editor
-    {::ee/schema
-     [:map
-      [:name :string]
-      [:address
-       [:orn
-        [:structured [:map
-                      [:street [:string {:min 1}]]
-                      [:number {:optional true} :int]]]
-        [:raw :string]]]
-      [:items
-       [:vector
-        [:map
-         [:item [:enum :fork :spade :pipe]]
-         [:price {:optional true} :double]
-         [:in-stock {:optional true} :boolean]]]] 
-      [:instructions [:or
-                      :string
-                      [:vector :string]]]
-      [:metadata [:map-of :keyword :string]]
-      [:foo [:tuple :int :string :boolean]]]
-     ::ee/value @state
-     ::ee/on-change (fn [v] (reset! state v))}]])
+  [ee/editor
+   {::ee/schema
+    [:map
+     [:name :string]
+     [:address
+      [:orn
+       [:structured [:map
+                     [:street [:string {:min 1}]]
+                     [:number {:optional true} :int]]]
+       [:raw :string]]]
+     [:items
+      [:vector
+       [:map
+        [:item [:enum :fork :spade :pipe]]
+        [:price {:optional true} :double]
+        [:in-stock {:optional true} :boolean]]]] 
+     [:instructions [:or
+                     :string
+                     [:vector :string]]]
+     [:metadata [:map-of :keyword :string]]
+     [:foo [:tuple :int :string :boolean]]]
+    ::ee/value @state
+    ::ee/on-change (fn [v] (prn (reset! state v)))}])
 
 (defn main []
   (portfolio/start!
    {:config
-    {:css-paths ["/css/styles.css"]
+    {:css-paths ["/css/chart.css" "/css/data_table.css" "/css/edn_editor.css"]
      :viewport/defaults
      {:background/background-color "#fdeddd"}}}))
 

@@ -1,8 +1,7 @@
 (ns robertluo.dashcraft.chart
   (:require
    [replicant.alias :refer [defalias]] 
-   [echarts]
-   [replicant.hiccup :as hiccup]))
+   [echarts]))
 
 (defn data->chart
   "turns clojure data into echart data"
@@ -19,8 +18,8 @@
            {:product "Socks",     "2015" 4.8,  "2016" 25}]
     :xAxis {:type :category}
     :yAxis {}
-    :series [{:type :bar} {:type :bar}]})
-  )
+    :series [{:type :bar} {:type :bar}]}))
+  
 
 (defalias 
   ^{:doc "
@@ -67,17 +66,28 @@ See https://echarts.apache.org/en/option.html for details.
                (.dispose memory))})]))
 
 (defn inc-take [col]
-  (->> (iterate inc 0) (take-while #(<= % (count col))) (map #(vec (take % col))) ))
+  (->> (iterate inc 0) (take-while #(<= % (count col))) (map #(vec (take % col)))))
 
 (comment
-  (inc-take [0 1 0]) ;=> [] [0 1] [0 1 1] 
-  )
+  (inc-take [0 1 0])) ;=> [] [0 1] [0 1 1] 
+  
 
-(defalias bread-scumb
-  [{::keys [items on-click label-of]}]
-  [:ul.breadcrumb
+(defalias
+  ^{:doc 
+"
+A bread crumb component to display path like data.
+
+Special attributes:
+ 
+  - `::items` to display
+  - `::on-click` event triggered when user clicked an item
+  - `::label-of` function takes an item returns a string
+"}
+  bread-crumb
+  [{::keys [items on-click label-of] :or {label-of str} :as attrs}]
+  [:ul (merge {:class ["breadcrumb"]} attrs)
    (for [item items]
-     [:li [:a {:href "#" :on {:click (fn [_] (on-click item))}} (if label-of (or (label-of item) "#") (str item))]])])
+     [:li [:a {:href "#" :on {:click (fn [_] (on-click item))}} (or (label-of item) "#")]])])
 
 (defn get-current 
   [drill-down rows path]
@@ -101,14 +111,13 @@ Special attributes:
          :or   {path [] drill-down :children}} data 
         get-current (partial get-current drill-down)]
     [:div attrs
-     [bread-scumb {::items (inc-take path)
+     [bread-crumb {::items (inc-take path)
                    ::on-click (fn [idx] (on-drill idx))
                    ::label-of (fn [p] (when label-of (label-of (get-current (:rows data) p))))}]
      [chart {::data (update data :rows #(cond-> (get-current % path) (seq path) drill-down))
              ::notify {:notify [:click {}]}
              :on {:notify (fn [evt] 
-                            (let [d        (-> evt .-detail (js->clj :keywordize-keys true) :data)
-                                  idx      (:dataIndex d)
-                                  new-p    (conj path idx)
-                                  children (-> data :rows (get-current new-p) drill-down)]
-                              (when (seq children) (on-drill new-p))))}}]]))
+                            (when-let [idx (-> evt .-detail (js->clj :keywordize-keys true) :data :dataIndex)]
+                              (let [new-p (conj path idx)
+                                    children (-> data :rows (get-current new-p) drill-down)]
+                                (when (seq children) (on-drill new-p)))))}}]]))
