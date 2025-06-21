@@ -29,7 +29,7 @@ A chart component using ECharts as underlying.
 ## Special attributes
 
  - `::data` contains `:columns` and `:rows` as in data-table
- - `::on-event` event handler spec, it is a vector of tuples as following:
+ - `::on-event` event handler spec, it is a map of notification name to tuples as following:
    - event type, in keyword. e.g. `:click`
    - event query, a map corresponding to mouse event query. e.g. `:seriesName \"2015\"
    - a handle function accept params data
@@ -52,11 +52,11 @@ See https://echarts.apache.org/en/option.html for details.
              (fn [{:replicant/keys [node remember]}]
                (let [chart (echarts/init node)]
                  (.setOption chart cht-js)
-                 (doseq [[chart-evt query] notify]
+                 (doseq [[notify-name [chart-evt query]] notify] 
                    (.on chart (name chart-evt)
                         (clj->js query)
                         (fn [params]
-                          (let [evt (js/CustomEvent. "notify" (clj->js {:detail {:data params}}))]
+                          (let [evt (js/CustomEvent. (name notify-name) (clj->js {:detail {:data params}}))]
                             (.dispatchEvent node evt)))))
                  (remember chart)))
              :replicant/on-update
@@ -74,22 +74,41 @@ See https://echarts.apache.org/en/option.html for details.
   )
 
 (defalias bread-scumb
-  [{::keys [items on-click label-of] :or {label-of #(if % (str %) "Root")}}]
+  [{::keys [items on-click label-of]}]
   [:ul.breadcrumb
    (for [item items]
-     [:li [:a {:href "#" :on {:click (fn [_] (on-click item))}} (label-of item)]])])
+     [:li [:a {:href "#" :on {:click (fn [_] (on-click item))}} (if label-of (or (label-of item) "#") (str item))]])])
 
-(defalias drill-down
-  [{::keys [data on-drill] :as attrs}]
-  (let [{:keys [path drill-down] :or {path []}} data
-        get-rows (fn [rows] (reduce (fn [rs elem] (-> rs (get elem) drill-down)) rows path))]
+(defn get-current 
+  [drill-down rows path]
+  (->>  (map (fn [p] #(get % p)) path)
+        (interpose drill-down)
+        (reduce (fn [r f] (f r)) rows)))
+
+(defalias 
+  ^{:doc "
+A chart can be drill down on `:path` inside `::data`.
+Special attributes:
+          
+  - `::data` full data
+    - `:drill-down` a function drill down to same shape data (default to `:children`)
+  - `::on-drill` an event when `:path` changed by user interaction
+  - `::label-of` a function accept a record and return the navigation bar label
+   "}
+  drill-down
+  [{::keys [data on-drill label-of] :as attrs}]
+  (let [{:keys [path drill-down]
+         :or   {path [] drill-down :children}} data 
+        get-current (partial get-current drill-down)]
     [:div attrs
-     [bread-scumb {::items (inc-take path) 
-                   ::on-click (fn [idx] (on-drill idx))}]
-     [chart {::data (update data :rows get-rows)
-             ::notify [[:click {}]]
+     [bread-scumb {::items (inc-take path)
+                   ::on-click (fn [idx] (on-drill idx))
+                   ::label-of (fn [p] (when label-of (label-of (get-current (:rows data) p))))}]
+     [chart {::data (update data :rows #(cond-> (get-current % path) (seq path) drill-down))
+             ::notify {:notify [:click {}]}
              :on {:notify (fn [evt] 
-                            (let [d (-> evt .-detail (js->clj :keywordize-keys true) :data)
-                                  idx (:dataIndex d)
-                                  children (-> data :rows get-rows (get idx) drill-down)]
-                              (when (seq children) (on-drill (conj path idx)))))}}]]))
+                            (let [d        (-> evt .-detail (js->clj :keywordize-keys true) :data)
+                                  idx      (:dataIndex d)
+                                  new-p    (conj path idx)
+                                  children (-> data :rows (get-current new-p) drill-down)]
+                              (when (seq children) (on-drill new-p))))}}]]))

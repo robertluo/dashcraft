@@ -19,8 +19,8 @@
   [state]
   [ch/chart
    {::ch/data @state 
-    ::ch/notify [[:click {:seriesName "2015"}]]
-    :on {:notify (fn [_] (swap! state assoc-in [:series 1 :type] :line))}}])
+    ::ch/notify {:2015 [:click {:seriesName "2015"}]}
+    :on {:2015 (fn [_] (swap! state assoc-in [:series 1 :type] :line))}}])
 
 (defscene drill-down-chart
   :params (atom {:columns [:product "2015" "2016"],
@@ -38,9 +38,9 @@
                  :legend {}
                  :tooltip {}})
   [state]
-  [ch/drill-down #::ch {:data @state, :on-drill 
-                        (fn [idx] 
-                          (prn (swap! state assoc :path idx)))}])
+  [ch/drill-down #::ch {:data @state, 
+                        :on-drill (fn [idx] (prn (swap! state assoc :path idx)))
+                        :label-of (fn [item] (:product item))}])
 
 (def table-data
   {:columns [:name :balance :sex :age]
