@@ -2,9 +2,7 @@
  :deps    {org.clojure/clojure             {:mvn/version "1.12.1"}
            org.clojure/clojurescript       {:mvn/version "1.12.42"}
            metosin/malli                   {:mvn/version "0.19.1"}
-           no.cjohansen/replicant          {:mvn/version "2025.03.27"}}
- :aliases {:dev {:extra-deps {no.cjohansen/portfolio          {:mvn/version "2025.01.28"}
-                              com.bhauman/figwheel-main       {:mvn/version "0.2.20"}
-                              cider/cider-nrepl               {:mvn/version "0.56.0"}
-                              cider/piggieback                {:mvn/version "0.6.0"}}
-                 :main-opts ["-m" "nrepl.cmdline" "--middleware" "[cider.piggieback/wrap-cljs-repl]"]}}}
+           no.cjohansen/replicant          {:mvn/version "2025.03.27"} 
+           com.bhauman/figwheel-main       {:mvn/version "0.2.20"}
+           no.cjohansen/portfolio          {:mvn/version "2025.01.28"}}
+ :aliases {:dev {:main-opts ["-m" "figwheel.main" "-b" "dev" "-r"]}}}
