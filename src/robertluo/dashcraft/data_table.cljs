@@ -55,15 +55,15 @@ A table header component.
 Special attributes:
           
  - `::column`
- - `::lable-of` an optional function accept the column returns a string.
+ - `::label-of` an optional function accept the column returns a string.
 
 Can have children which inherites `::column`
          "}
   th
-  [{::keys [column lable-of] :or {lable-of (fn [v] (str v))} :as attrs}
+  [{::keys [column label-of] :or {label-of (fn [v] (str v))} :as attrs}
    children]
   [:div attrs
-   [:span (or (lable-of column) " ")]
+   [:span (or (label-of column) " ")]
    (map #(hiccup/update-attrs % assoc ::column column) children)])
 
 (defalias 
@@ -97,21 +97,21 @@ Display cell of data table.
 special attributes:
  - `::column` the column of the cell
  - `::cell` the value of this cell
- - `::lable-of` an optional function accept column and cell returns a string as the content
+ - `::label-of` an optional function accept column and cell returns a string as the content
  - `::class-of` an optional function accept column and cell returns the additional class vector.
 
 Can have children who inherit `::column` and `::cell`.
       "}
   td
-  [{::keys [column cell lable-of class-of] 
+  [{::keys [column cell label-of class-of] 
     :or {class-of (constantly []) 
-         lable-of (fn [_ v] (str v))}
+         label-of (fn [_ v] (str v))}
     :as attrs}
    children]
   (let [classes (class-of column cell)]
     [:div (update attrs :class concat classes)
      [:span
-      (or (lable-of column cell) " ")]
+      (or (label-of column cell) " ")]
      (map #(hiccup/update-attrs % assoc ::column column ::cell cell) children)]))
 
 (defn sort-rows

@@ -60,7 +60,7 @@
   [state]
   [dt/table
    {:class :data-table ::dt/data @state}
-   [dt/th {::dt/lable-of (fn [v] (case v ::ch/group "" (name v)))}
+   [dt/th {::dt/label-of (fn [v] (case v ::ch/group "" (name v)))}
     [dt/sort-button {::dt/sorting (:sorting @state)
                      ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st))))}]]
    [dt/td {::dt/class-of (fn [column _] (cond-> [] (= column :balance) (conj "number-cell")))}]])
