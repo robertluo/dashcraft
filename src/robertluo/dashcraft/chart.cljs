@@ -18,8 +18,8 @@
            {:product "Socks",     "2015" 4.8,  "2016" 25}]
     :xAxis {:type :category}
     :yAxis {}
-    :series [{:type :bar} {:type :bar}]})
-  )
+    :series [{:type :bar} {:type :bar}]}))
+  
 
 (defalias 
   ^{:doc "
@@ -66,13 +66,24 @@ See https://echarts.apache.org/en/option.html for details.
                (.dispose memory))})]))
 
 (defn inc-take [col]
-  (->> (iterate inc 0) (take-while #(<= % (count col))) (map #(vec (take % col))) ))
+  (->> (iterate inc 0) (take-while #(<= % (count col))) (map #(vec (take % col)))))
 
 (comment
-  (inc-take [0 1 0]) ;=> [] [0 1] [0 1 1] 
-  )
+  (inc-take [0 1 0])) ;=> [] [0 1] [0 1 1] 
+  
 
-(defalias bread-crumb
+(defalias
+  ^{:doc 
+"
+A bread crumb component to display path like data.
+
+Special attributes:
+ 
+  - `::items` to display
+  - `::on-click` event triggered when user clicked an item
+  - `::label-of` function takes an item returns a string
+"}
+  bread-crumb
   [{::keys [items on-click label-of] :or {label-of str} :as attrs}]
   [:ul (merge {:class ["breadcrumb"]} attrs)
    (for [item items]
