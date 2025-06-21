@@ -34,7 +34,7 @@
                  :drill-down :children
                  :xAxis {:type :category}
                  :yAxis {}
-                 :series [{:type :bar} {:type :bar}]
+                 :series [{:type :pie} {:type :pie}]
                  :legend {}
                  :tooltip {}})
   [state]
