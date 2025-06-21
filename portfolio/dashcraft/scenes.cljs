@@ -58,7 +58,8 @@
   :params (atom (dt/grouping-data table-data {:column :sex :aggregations [[:balance (fnil + 0)] [:age]]}))
   [state]
   [dt/table
-   {::dt/data @state}
+   {::dt/data @state
+    ::dt/drill-down :children}
    [dt/th {::dt/label-of (fn [v] (case v ::ch/group "" (name v)))}
     [dt/sort-button {::dt/sorting (:sorting @state)
                      ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st))))}]]
@@ -100,7 +101,7 @@
      [:metadata [:map-of :keyword :string]]
      [:foo [:tuple :int :string :boolean]]]
     ::ee/value @state
-    ::ee/on-change (fn [v] (reset! state v))}])
+    ::ee/on-change (fn [v] (prn (reset! state v)))}])
 
 (defn main []
   (portfolio/start!

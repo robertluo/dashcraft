@@ -20,20 +20,18 @@ returns `data` specified by `grouping` spec:
                 (fn [rows]
                   (->> rows
                        (group-by g-clm)
-                       (mapcat
+                       (map
                         (fn [[v irows]]
-                          (cons
-                           (merge {::group v}
-                                  (reduce
-                                   (fn [acc row]
-                                     (->> aggregations
-                                          (reduce
-                                           (fn [v [clm f]]
-                                             (merge-with (or f (fnil + 0)) v (select-keys row [clm])))
-                                           acc)))
-                                   {}
-                                   irows))
-                           irows)))))))))
+                          (merge {::group v :children irows}
+                                 (reduce
+                                  (fn [acc row]
+                                    (->> aggregations
+                                         (reduce
+                                          (fn [v [clm f]]
+                                            (merge-with (or f (fnil + 0)) v (select-keys row [clm])))
+                                          acc)))
+                                  {}
+                                  irows))))))))))
 
 (comment
   (grouping-data
@@ -135,7 +133,7 @@ Chidlren:
   - a table-cell default to `td`
 "}
   table 
-  [{::keys [data] :as attrs}
+  [{::keys [data drill-down] :as attrs}
    [table-header table-cell]]
   (let [{:keys [columns rows]} data]
     [:div (merge {:class ["data-table"]} attrs)
@@ -145,11 +143,11 @@ Chidlren:
         (for [clm columns]
           [:th (hiccup/update-attrs (or table-header [th]) assoc ::column clm)])]]
       [:tbody
-       (map-indexed
-        (fn [idx row]
-          [:tr {:replicant/key idx}
-           (for [clm columns
-                 :let [cell (get row clm)]]
-             [:td
-              (hiccup/update-attrs (or table-cell [td]) assoc ::column clm ::cell cell)])])
-        rows)]]]))
+       (->> (cond->> rows drill-down (mapcat (fn [r] (if-let [children (cons r (drill-down r))] children [r]))))
+            (map-indexed
+             (fn [idx row]
+               [:tr {:replicant/key idx}
+                (for [clm columns
+                      :let [cell (get row clm)]]
+                  [:td
+                   (hiccup/update-attrs (or table-cell [td]) assoc ::column clm ::cell cell)])])))]]]))
