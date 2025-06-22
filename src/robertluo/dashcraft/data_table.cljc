@@ -20,7 +20,7 @@ returns `data` specified by `grouping` spec:
                 (fn [rows]
                   (->> rows
                        (group-by g-clm)
-                       (map
+                       (mapv
                         (fn [[v irows]]
                           (merge {::group v :children irows}
                                  (reduce
@@ -33,13 +33,17 @@ returns `data` specified by `grouping` spec:
                                   {}
                                   irows))))))))))
 
+^:rct/test
 (comment
   (grouping-data
    {:columns [:name :sex :age :balance]
     :rows [{:name "Robert" :sex :male :age 23 :balance 1323442}
            {:name "Jane" :sex :female :age 15 :balance 61923}
            {:name "John" :sex :male :balance -456 :age 45}]}
-   {:column :sex :aggregations [[:balance] [:age]]}))
+   {:column :sex :aggregations [[:balance] [:age]]}) ; =>>
+  {:columns #((set %) ::group) ;; new column added
+   :rows [{::group :male, :children #(= 2 (count %)), :balance 1322986, :age 68}]}
+  )
 
 (defn ^:no-doc switch-sorting
   [sorting column]
@@ -122,6 +126,18 @@ Can have children who inherit `::column` and `::cell`.
      (cond->> rows 
        (and sort-clm order) f
        drill-down (map (fn [r] (update r drill-down sort-rows sorting drill-down)))))))
+
+^:rct/test
+(comment
+  (sort-rows 
+   [{::group :male, :children [{:name "Robert", :sex :male, :age 23, :balance 1323442}
+                               {:name "John", :sex :male, :balance -456, :age 45}], :balance 1322986, :age 68}
+    {::group :female, :children [{:name "Jane", :sex :female, :age 15, :balance 61923}], :balance 61923, :age 15}]
+   {:column :balance :order :desc}
+   :children) ;=>>
+  [{::group :male :children [{:name "Robert"} {:name "John"}]}
+   {::group :female :children [{:name "Jane"}]}] 
+  )
 
 (defalias 
   ^{:doc "

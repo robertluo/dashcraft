@@ -22,7 +22,7 @@
 (defmethod default-value :vector  [_] [])
 (defmethod default-value :boolean [_] (even? (rand-int 2)))
 (defmethod default-value :int     [_] (rand-int 1000))
-(defmethod default-value :double   [_] (rand))
+(defmethod default-value :double  [_] (rand))
 
 (defmethod default-value :map [schema]
   (into {}
@@ -168,9 +168,7 @@
                  [:div.malli-editor-key-value {:style {:display :flex}}
                   (btn-minus #(on-change (dissoc value k)))
                   [:div.malli-editor-key
-                   (edit key-schema k #(on-change (-> value
-                                                      (dissoc k)
-                                                      (assoc % v))))]
+                   (edit key-schema k #(on-change (-> value (dissoc k) (assoc % v))))]
                   [:div.malli-editor-value {:style {:margin-left "0.5em"}}
                    (edit value-schema v #(on-change (assoc value k %)))]])
                ;; TODO what to do when key is already taken?
@@ -256,8 +254,8 @@
 
 (defalias
   ^{:doc "
-An EDN editor backed by malli `schema` with `value`, when its value changed,
-triggers `on-change` event with the value.
+An EDN editor backed by malli `::schema` with `::value`, when its value changed,
+triggers `::on-change` event with the value.
    "}
   editor
   [{::keys [schema value on-change] :as attrs}]
