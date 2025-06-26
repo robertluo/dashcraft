@@ -1,0 +1,75 @@
+  /* reference styles for form */
+
+.form {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 32px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.form h2 {
+    font-size: 24px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+.form .group {
+    margin-bottom: 16px;
+}
+
+.form label {
+    display: block;
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.form input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.form input:focus {
+    border-color: #4a90e2;
+    outline: none;
+}
+
+.form .submit-btn {
+    width: 100%;
+    background: #4a90e2;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 16px;
+}
+
+.form .submit-btn:hover {
+    background: #357ab8;
+}
+
+.form .required {
+  border: 2px solid #ff9800; /* Orange border for required fields */
+  background-color: #fff8e1; /* Light orange background */
+}
+
+.form .error {
+    color: red;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: none;
+}
+
+.form .show-error {
+    display: block;
+}

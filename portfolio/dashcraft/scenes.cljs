@@ -4,7 +4,8 @@
    [portfolio.ui :as portfolio]
    [robertluo.dashcraft.chart :as ch]
    [robertluo.dashcraft.data-table :as dt]
-   [robertluo.dashcraft.edn-editor :as ee]))
+   [robertluo.dashcraft.edn-editor :as ee]
+   [robertluo.dashcraft.form :as form]))
 
 (defscene simple-chart
   :params (atom {:columns [:product "2015" "2016"],
@@ -103,10 +104,23 @@
     ::ee/value @state
     ::ee/on-change (fn [v] (prn (reset! state v)))}])
 
+(defscene Simple-form
+  :params (atom {:username "whoever" :balance "xxx"})
+  [state]
+  (form/form
+   #::form {:schema [:map
+                     [:username {:placeholder "some@example.com" :description "Your username"}:string]
+                     [:password {:input-type :password} :string]
+                     [:balance {:optional true} :int]]
+            :data @state
+            :on-submit (fn [data _errors] (prn (reset! state data)) true)
+            :title (constantly [:h2 "Simple form"])
+            :button-label "Login"}))
+
 (defn main []
   (portfolio/start!
    {:config
-    {:css-paths ["/css/chart.css" "/css/data_table.css" "/css/edn_editor.css"]
+    {:css-paths ["/css/chart.css" "/css/data_table.css" "/css/edn_editor.css" "/css/form.css"]
      :viewport/defaults
      {:background/background-color "#fdeddd"}}}))
 
