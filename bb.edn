@@ -1,4 +1,5 @@
-{:tasks
+{:pods {org.babashka/fswatcher {:version "0.0.5"}}
+ :tasks
  {clean    {:doc      "Clean project"
             :requires ([babashka.fs :as fs])
             :task     (doseq [dir ["target" "node_modules"]] (fs/delete-tree dir))}
@@ -6,6 +7,22 @@
             :task (shell "bun update")}
   test     {:doc "Run tests"
             :task (clojure "-X:dev:test")}
+  watch    {:doc "Watch test for developing"
+            :depends [test]
+            :requires ([pod.babashka.fswatcher :as fw])
+            :task 
+            (loop [p (promise)] 
+              (println "\nWatching tests...")
+              (fw/watch "src" 
+                        (fn [evt]
+                          (when (#{:write :chmod} (:type evt))
+                            (try 
+                              (run 'test)
+                              (catch Exception _ nil)
+                              (finally (deliver p :done)))))
+                        {:recursive true})
+              (deref p)
+              (recur (promise)))}
   dev      {:doc     "Invoke a dev repl"
             :depends [-prepare]
             :task    (clojure "-M:dev -m nrepl.cmdline --middleware \"[cider.nrepl/cider-middleware cider.piggieback/wrap-cljs-repl]]\"")}}}
