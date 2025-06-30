@@ -4,12 +4,14 @@
    [replicant.alias :refer [defalias]]
    [phosphor.icons :as icons]))
 
-(defalias loading-container
-  "A container component that shows a loading spinner when loading.
-   
-   Properties:
-   - `::loading?` - boolean indicating if loading state should be shown
-   - Children will be displayed when not loading"
+(defalias
+  ^{:doc "A container component that shows a loading spinner when loading.
+            
+          Properties:
+          
+            - `::loading?` - boolean indicating if loading state should be shown
+            - Children will be displayed when not loading"}
+  loading-container 
   [{::keys [loading?] :as attrs} children]
   [:div (merge {:class ["loading-container"]} (dissoc attrs ::loading?))
    (when loading?

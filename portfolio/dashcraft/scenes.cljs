@@ -6,7 +6,8 @@
    [robertluo.dashcraft.data-table :as dt]
    [robertluo.dashcraft.edn-editor :as ee]
    [robertluo.dashcraft.form :as form]
-   [robertluo.dashcraft.loading :as loading]))
+   [robertluo.dashcraft.loading :as loading]
+   [robertluo.dashcraft.error-aware :as error-aware]))
 
 (defscene simple-chart
   :params (atom {:columns [:product "2015" "2016"],
@@ -125,12 +126,24 @@
    {::loading/loading? (:loading? @state)}
    [dt/table {::dt/data table-data}]])
 
+(defscene error-aware-container-demo
+  :params (atom {:error "Something went wrong! This is an example error message."})
+  [state]
+  [error-aware/error-aware-container
+   {::error-aware/error (:error @state)
+    ::error-aware/on-dismiss (fn [_] (swap! state dissoc :error))}
+   [:div
+    [:h3 "Content Behind Error"]
+    [:p "This content is visible behind the error overlay."]
+    [:button {:on {:click #(swap! state assoc :error "New error occurred!")}}
+     "Trigger Error"]]])
+
 (defn main []
   (portfolio/start!
    {:config
     {:css-paths ["/css/chart.css" "/css/data_table.css" 
             "/css/edn_editor.css" "/css/form.css"
-            "/css/loading.css"]
+            "/css/loading.css" "/css/error_aware.css"]
      :viewport/defaults
      {:background/background-color "#fdeddd"}}}))
 
