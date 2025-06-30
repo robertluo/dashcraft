@@ -109,15 +109,15 @@
 (defscene Simple-form
   :params (atom {:username "whoever" :balance "xxx"})
   [state]
-  (form/form
+  [form/form
    #::form {:schema [:map
-                     [:username {:placeholder "some@example.com" :description "Your username"}:string]
+                     [:username {:placeholder "some@example.com" :description "Your username"} :string]
                      [:password {:input-type :password} :string]
                      [:balance {:optional true} :int]]
             :data @state
             :on-submit (fn [data _errors] (prn (reset! state data)) true)
-            :title (constantly [:h2 "Simple form"])
-            :button-label "Login"}))
+            :button-label "Login"}
+   [:h2 (str "Simple form for: " (:username @state))]])
 
 (defscene loading-container-demo
   :params (atom {:loading? true})

@@ -1,6 +1,8 @@
 (ns robertluo.dashcraft.form
   "A general form component"
   (:require
+   [replicant.alias :refer [defalias]]
+   [replicant.hiccup :as hiccup]
    [malli.core :as m]
    [malli.transform :as mt]
    #?(:clj [clojure.pprint :as pp]
@@ -55,8 +57,8 @@
   [{:balance 322}])
   
 
-(defn form 
-  "
+(defalias ^{:doc
+            "
 A component of a HTML form creating from `schema` with current `data`.
    
 ## Properties
@@ -76,15 +78,16 @@ A component of a HTML form creating from `schema` with current `data`.
 ## Events
    
    - `::on-submit` A function receives coerced data and errors of raw data (`::data`), returns a truthy value
-     will prevent the default event handler (refresh)
-"
-  [{::keys [schema data on-submit title label button-label] :as attrs
+     will prevent the default event handler (refresh)"}
+  form
+  [{::keys [schema data on-submit label button-label] :as attrs
     :or {label #(pp/cl-format nil "~:(~a~)" (name %))
-         button-label "Submit"}}] 
+         button-label "Submit"}}
+   children] 
   (let [[data errors] (data&errors schema data)
         entries (extract-entries schema)]
     [:div (merge {:class ["form"]} attrs)
-     (when title (title attrs))
+     (map #(hiccup/update-attrs % assoc ::schema schema ::data data) children)
      [:form {:on {:submit (fn [evt] (when (apply on-submit (data&errors schema (form-data evt)))
                                       (.preventDefault evt)))}}
       (for [{fname :name :keys [type attributes]} entries
