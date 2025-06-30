@@ -7,7 +7,8 @@
    [robertluo.dashcraft.edn-editor :as ee]
    [robertluo.dashcraft.form :as form]
    [robertluo.dashcraft.loading :as loading]
-   [robertluo.dashcraft.error-aware :as error-aware]))
+   [robertluo.dashcraft.error-aware :as error-aware]
+   [replicant.dom :as r]))
 
 (defscene simple-chart
   :params (atom {:columns [:product "2015" "2016"],
@@ -109,15 +110,19 @@
 (defscene Simple-form
   :params (atom {:username "whoever" :balance "xxx"})
   [state]
-  [form/form
-   #::form {:schema [:map
-                     [:username {:placeholder "some@example.com" :description "Your username"} :string]
-                     [:password {:input-type :password} :string]
-                     [:balance {:optional true} :int]]
-            :data @state
-            :on-submit (fn [data _errors] (prn (reset! state data)) true)
-            :button-label "Login"}
-   [:h2 (str "Simple form for: " (:username @state))]])
+  (let [schema [:map
+                [:username {:placeholder "some@example.com" :description "Your username"} :string]
+                [:password {:input-type :password} :string]
+                [:balance {:optional true} :int]]]
+    [form/form
+     {::form/schema schema
+      ::form/data @state
+      ::form/button-label "Login"
+      :on {:submit (fn [evt]
+                     (let [[data _errors] (form/data&errors schema (form/form-data evt))]
+                       (prn (reset! state data)))
+                     (.preventDefault evt))}}
+     [:h2 (str "Simple form for: " (:username @state))]]))
 
 (defscene loading-container-demo
   :params (atom {:loading? true})
@@ -131,7 +136,7 @@
   [state]
   [error-aware/error-aware-container
    {::error-aware/error (:error @state)
-    ::error-aware/on-dismiss (fn [_] (swap! state dissoc :error))}
+    :on {:dismiss (fn [_] (swap! state dissoc :error))}}
    [:div
     [:h3 "Content Behind Error"]
     [:p "This content is visible behind the error overlay."]
@@ -142,8 +147,8 @@
   (portfolio/start!
    {:config
     {:css-paths ["/css/chart.css" "/css/data_table.css" 
-            "/css/edn_editor.css" "/css/form.css"
-            "/css/loading.css" "/css/error_aware.css"]
+                 "/css/edn_editor.css" "/css/form.css"
+                 "/css/loading.css" "/css/error_aware.css"]
      :viewport/defaults
      {:background/background-color "#fdeddd"}}}))
 

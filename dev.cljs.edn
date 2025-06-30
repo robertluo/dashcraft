@@ -1,5 +1,6 @@
 ^{:watch-dirs ["src" "portfolio"]
   :css-dirs ["resources/public/css"]
+  :extra-main-files {:portfolio {:main dashcraft.scenes}}
   :auto-testing true
   :auto-bundle :webpack}
-{:main dashcraft.scenes}
+{:main robertluo.dashcraft.main}

@@ -35,6 +35,8 @@
      :clj submit-evt))
 
 (defn data&errors
+  "Validate `data`, returns coerced data in vector if it conforms `schema`, otherwise a pair
+   of raw-data and field errors in a map"
   [schema data]
   (let [v (m/coerce schema data mt/string-transformer identity #(assoc % ::has-error true))] 
     (if (::has-error v)
@@ -77,10 +79,9 @@ A component of a HTML form creating from `schema` with current `data`.
 
 ## Events
    
-   - `::on-submit` A function receives coerced data and errors of raw data (`::data`), returns a truthy value
-     will prevent the default event handler (refresh)"}
+   - `:submit` event data can be extracted using `form-data`"}
   form
-  [{::keys [schema data on-submit label button-label] :as attrs
+  [{::keys [schema data label button-label] :as attrs
     :or {label #(pp/cl-format nil "~:(~a~)" (name %))
          button-label "Submit"}}
    children] 
@@ -88,8 +89,7 @@ A component of a HTML form creating from `schema` with current `data`.
         entries (extract-entries schema)]
     [:div (merge {:class ["form"]} attrs)
      (map #(hiccup/update-attrs % assoc ::schema schema ::data data) children)
-     [:form {:on {:submit (fn [evt] (when (apply on-submit (data&errors schema (form-data evt)))
-                                      (.preventDefault evt)))}}
+     [:form
       (for [{fname :name :keys [type attributes]} entries
             :let [err (and errors (get errors fname))]]
         [:div.group
