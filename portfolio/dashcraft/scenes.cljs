@@ -5,7 +5,8 @@
    [robertluo.dashcraft.chart :as ch]
    [robertluo.dashcraft.data-table :as dt]
    [robertluo.dashcraft.edn-editor :as ee]
-   [robertluo.dashcraft.form :as form]))
+   [robertluo.dashcraft.form :as form]
+   [robertluo.dashcraft.loading :as loading]))
 
 (defscene simple-chart
   :params (atom {:columns [:product "2015" "2016"],
@@ -117,10 +118,19 @@
             :title (constantly [:h2 "Simple form"])
             :button-label "Login"}))
 
+(defscene loading-container-demo
+  :params (atom {:loading? true})
+  [state]
+  [loading/loading-container
+   {::loading/loading? (:loading? @state)}
+   [dt/table {::dt/data table-data}]])
+
 (defn main []
   (portfolio/start!
    {:config
-    {:css-paths ["/css/chart.css" "/css/data_table.css" "/css/edn_editor.css" "/css/form.css"]
+    {:css-paths ["/css/chart.css" "/css/data_table.css" 
+            "/css/edn_editor.css" "/css/form.css"
+            "/css/loading.css"]
      :viewport/defaults
      {:background/background-color "#fdeddd"}}}))
 
