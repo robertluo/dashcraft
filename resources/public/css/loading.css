@@ -1,0 +1,31 @@
+.loading-container {
+  position: relative;
+  width: 100%;
+  min-height: 100px;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.loading-spinner svg {
+  animation: spin 1s linear infinite;
+}
+
+.loading-content {
+  transition: filter 0.2s ease-in-out;
+}
+
+.loading-content.blurred {
+  filter: blur(4px);
+  pointer-events: none;
+}
