@@ -9,3 +9,5 @@ target/
 .cpcache/
 .nrepl-*
 .vscode/
+repl-mcp.log
+dev/*.mustache
