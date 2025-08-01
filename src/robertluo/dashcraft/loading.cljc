@@ -13,7 +13,7 @@
             - Children will be displayed when not loading"}
   loading-container 
   [{::keys [loading?] :as attrs} children]
-  [:div (merge {:class ["loading-container"]} (dissoc attrs ::loading?))
+  [:div (merge {:class ["loading-container"]} attrs)
    (when loading?
      [:div.loading-spinner
       (icons/render :circle-notch {:size "32px"})])

@@ -2,18 +2,24 @@
   "A container component that displays error messages on top of content"
   (:require
    [replicant.alias :refer [defalias]]
-   [phosphor.icons :as icons]))
+   [phosphor.icons :as icons]
+   [robertluo.dashcraft.util :as u]))
 
 (defalias
-  ^{:doc "A container component that shows an error overlay when an error occurs.
-            
-          Properties:
-            - `::error` - error message string to display (nil/false means no error)
-            - `::on-dismiss` - callback function called when user clicks OK button
-            - Children will be displayed underneath the error overlay"}
+  ^{:doc "
+A container component that shows an error overlay when an error occurs.
+  
+Properties:
+  - `::error` - error message string to display (nil/false means no error)
+  - Children will be displayed underneath the error overlay
+
+Event:
+
+  - `:dismiss` when user click the ok button, normally you need to reset data
+"}
   error-aware-container 
-  [{::keys [error on-dismiss] :as attrs} children]
-  [:div (merge {:class ["error-aware-container"]} (dissoc attrs ::error ::on-dismiss))
+  [{::keys [error] :as attrs} children]
+  [:div (merge {:class ["error-aware-container"]} attrs)
    (when error
      [:div.error-overlay
       [:div.error-modal
@@ -21,7 +27,7 @@
         (icons/render :warning-circle {:size "24px"})]
        [:div.error-message error]
        [:button.error-dismiss-btn
-        {:on {:click (fn [_] (when on-dismiss (on-dismiss error)))}}
+        {:on {:click (fn [evt] (.dispatchEvent (.-target evt) (u/custom-event :dismiss nil)))}}
         "OK"]]])
    [:div.error-content
     children]])
