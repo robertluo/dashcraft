@@ -13,11 +13,6 @@
                                io.github.robertluo/rich-comment-tests {:mvn/version "1.1.78"}
                                philoskim/debux                        {:mvn/version "0.9.1"}}}
            :nrepl {:jvm-opts ["-Djdk.attach.allowAttachSelf"]
-                   :main-opts ["-m" "nrepl.cmdline" "--port" "7888"]}
-           :mcp {:deps {org.slf4j/slf4j-nop {:mvn/version "2.0.16"}
-                        com.bhauman/clojure-mcp #:git{:url "https://github.com/bhauman/clojure-mcp.git"
-                                                      :sha "5024190dab84c91d95e45832d90fdcb2fa728739"}}
-                 :exec-fn clojure-mcp.main/start-mcp-server
-                 :exec-args {:port 7888}}
-           :test {:exec-fn   com.mjdowney.rich-comment-tests.test-runner/run-tests-in-file-tree!
-                  :exec-args {:dirs #{"src"}}}}}
+                   :main-opts ["-m" "nrepl.cmdline" "--port" "7888"]}}
+          :test {:exec-fn   com.mjdowney.rich-comment-tests.test-runner/run-tests-in-file-tree!
+                  :exec-args {:dirs #{"src"}}}}
