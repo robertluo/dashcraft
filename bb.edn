@@ -10,13 +10,13 @@
   watch    {:doc "Watch test for developing"
             :depends [test]
             :requires ([pod.babashka.fswatcher :as fw])
-            :task 
-            (loop [p (promise)] 
+            :task
+            (loop [p (promise)]
               (println "\nWatching tests...")
-              (fw/watch "src" 
+              (fw/watch "src"
                         (fn [evt]
                           (when (#{:write :chmod} (:type evt))
-                            (try 
+                            (try
                               (run 'test)
                               (catch Exception _ nil)
                               (finally (deliver p :done)))))
@@ -25,4 +25,4 @@
               (recur (promise)))}
   dev      {:doc     "Invoke a dev repl"
             :depends [-prepare]
-            :task    (clojure "-M:dev -m nrepl.cmdline --middleware \"[cider.nrepl/cider-middleware cider.piggieback/wrap-cljs-repl]]\"")}}}
+            :task    (clojure "-M:dev -m nrepl.cmdline --port 7888 --middleware \"[cider.nrepl/cider-middleware cider.piggieback/wrap-cljs-repl]]\"")}}}

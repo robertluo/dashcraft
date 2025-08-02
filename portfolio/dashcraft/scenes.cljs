@@ -22,7 +22,7 @@
                  :tooltip {}})
   [state]
   [ch/chart
-   {::ch/data @state 
+   {::ch/data @state
     ::ch/notify {:2015 [:click {:seriesName "2015"}]}
     :on {:2015 (fn [_] (swap! state assoc-in [:series 1 :type] :line))}}])
 
@@ -42,7 +42,7 @@
                  :legend {}
                  :tooltip {}})
   [state]
-  [ch/drill-down #::ch {:data @state, 
+  [ch/drill-down #::ch {:data @state,
                         :on-drill (fn [idx] (prn (swap! state assoc :path idx)))
                         :label-of (fn [item] (:product item))}])
 
@@ -52,8 +52,7 @@
    [{:name "Robert" :sex :male :age 23 :balance 1323442}
     {:name "Jane" :sex :female :age 15 :balance 61923}
     {:name "John" :sex :male :balance -456 :age 45}]
-   :sorting {:sortable #{:balance :age}} ;specify which columns can be sorted
-   })
+   :sorting {:sortable #{:balance :age}}}) ;specify which columns can be sorted
 
 (defscene simple-data-table
   [dt/table {::dt/data table-data}])
@@ -67,7 +66,8 @@
    [dt/th {::dt/label-of (fn [v] (case v ::ch/group "" (name v)))}
     [dt/sort-button {::dt/sorting (:sorting @state)
                      ::dt/on-sort (fn [st] (swap! state #(-> % (assoc :sorting st) (update :rows dt/sort-rows st :children))))}]]
-   [dt/td {::dt/class-of (fn [column _] (cond-> [] (= column :balance) (conj "number-cell")))}]])
+   [dt/td {::dt/class-of (fn [column _] (cond-> [] (= column :balance) (conj "number-cell")))
+           ::dt/label-of (fn [column v] (if (= column :balance) (cljs.pprint/cl-format nil "~:d" v) (str v)))}]])
 
 (defscene simple-edn-editor
   :params (atom {:name "Old Gaffer"
@@ -98,7 +98,7 @@
        [:map
         [:item [:enum :fork :spade :pipe]]
         [:price {:optional true} :double]
-        [:in-stock {:optional true} :boolean]]]] 
+        [:in-stock {:optional true} :boolean]]]]
      [:instructions [:or
                      :string
                      [:vector :string]]]
@@ -146,10 +146,10 @@
 (defn main []
   (portfolio/start!
    {:config
-    {:css-paths ["/css/chart.css" "/css/data_table.css" 
+    {:css-paths ["/css/chart.css" "/css/data_table.css"
                  "/css/edn_editor.css" "/css/form.css"
-                 "/css/loading.css" "/css/error_aware.css"]
-     :viewport/defaults
-     {:background/background-color "#fdeddd"}}}))
+                 "/css/loading.css" "/css/error_aware.css"]}
+    :viewport/defaults
+    {:background/background-color "#fdeddd"}}))
 
 (main)
