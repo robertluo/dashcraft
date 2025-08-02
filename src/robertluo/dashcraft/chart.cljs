@@ -1,6 +1,7 @@
 (ns robertluo.dashcraft.chart
   (:require
    [replicant.alias :refer [defalias]] 
+   [robertluo.dashcraft.util :as u]
    [echarts]))
 
 (defn data->chart
@@ -55,8 +56,7 @@ See https://echarts.apache.org/en/option.html for details.
                    (.on chart (name chart-evt)
                         (clj->js query)
                         (fn [params]
-                          (let [evt (js/CustomEvent. (name notify-name) (clj->js {:detail {:data params}}))]
-                            (.dispatchEvent node evt)))))
+                          (.dispatchEvent node (u/custom-event notify-name params)))))
                  (remember chart)))
              :replicant/on-update
              (fn [{:replicant/keys [memory]}]
